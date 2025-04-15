@@ -57,7 +57,7 @@
       });
     });
 
-    function startGame() {
+    window.startGame = function () {
       set(ref(db, `rooms/${roomCode}/status`), "started");
       window.location.href = "timeout.html";
     }
