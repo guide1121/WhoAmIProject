@@ -68,6 +68,19 @@
       }
     });
 
+     // ✅ [เพิ่ม] ฟังสถานะเกม ถ้าเริ่มแล้วให้ redirect ไป word.html
+     const gameStatusRef = ref(db, `rooms/${roomCode}/status`);
+    onValue(gameStatusRef, (snapshot) => {
+      if (snapshot.val() === "started") {
+        window.location.href = "word.html";
+      }
+    });
+
+    // ✅ [เพิ่ม] ให้ goToCategory เป็น global สำหรับ host
+    window.goToCategory = function () {
+      window.location.href = "category.html";
+    }
+
 
   </script>
 </body>
