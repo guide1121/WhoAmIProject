@@ -36,7 +36,7 @@
     const db = getDatabase(app);
     const roomCode = localStorage.getItem("roomCode");
 
-    function selectCategory(category) {
+    window.selectCategory = function(category) {
       const words = {
         "การ์ตูน": ["โดราเอมอน", "ซินเดอเรลล่า", "สพันจ์บ็อบ"],
         "ดารา": ["ใหม่ ดาวิกา", "เวียร์ ศุกลวัฒน์", "ญาญ่า"],
