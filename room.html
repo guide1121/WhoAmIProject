@@ -88,6 +88,12 @@
         }
       }, 1000);
     });
+
+        // ✅ ทำให้ startGame เป็น global function
+        window.startGame = function () {
+      const startTime = Date.now();
+      set(startRef, startTime);
+    }
   </script>
 </body>
 </html>
