@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who am I - เริ่มเกม</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>🎭 Who am I?</h1>
+    <p>เริ่มเกมทายคำบนหัวกับเพื่อนของคุณ!</p>
+
+    <div class="room-actions">
+      <button onclick="createRoom()">➕ สร้างห้องใหม่</button>
+      <div>
+        <input type="text" id="roomCode" placeholder="ใส่รหัสห้อง...">
+        <button onclick="joinRoom()">➡️ เข้าร่วมห้อง</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function createRoom() {
+      // สุ่มรหัสห้องแบบง่าย (เช่น 4 หลัก)
+      const code = Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('roomCode', code);
+      localStorage.setItem('isHost', true);
+      window.location.href = `room.html`;
+    }
+
+    function joinRoom() {
+      const code = document.getElementById('roomCode').value.trim();
+      if (code) {
+        localStorage.setItem('roomCode', code);
+        localStorage.setItem('isHost', false);
+        window.location.href = `room.html`;
+      } else {
+        alert("กรุณาใส่รหัสห้องก่อนเข้าร่วม!");
+      }
+    }
+  </script>
+</body>
+</html>

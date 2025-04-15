@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ดูคำบนหัวเพื่อน</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h2>🙈 คำบนหัวเพื่อน</h2>
+    <ul id="word-list">
+      <!-- แสดงชื่อ + คำของแต่ละคน -->
+    </ul>
+    <button onclick="startGame()">▶️ เริ่มเกม!</button>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAc5HEG0fi54dSNOp3mpCnvG5cFQ0TyDCc",
+        authDomain: "whoami-91c56.firebaseapp.com",
+        databaseURL: "https://whoami-91c56-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "whoami-91c56",
+        storageBucket: "whoami-91c56.firebasestorage.app",
+        messagingSenderId: "415219915433",
+        appId: "1:415219915433:web:9d7f4328d898a9bcb967b8",
+        measurementId: "G-R5B47J3D19"
+    };
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const roomCode = localStorage.getItem("roomCode");
+    const currentName = prompt("เพื่อความชัวร์ ใส่ชื่อคุณอีกครั้ง");
+
+    const playerListRef = ref(db, `rooms/${roomCode}/players`);
+    const wordListRef = ref(db, `rooms/${roomCode}/words`);
+    const wordListEl = document.getElementById("word-list");
+
+    onValue(playerListRef, snapshot => {
+      const players = snapshot.val();
+      onValue(wordListRef, wordSnap => {
+        const words = wordSnap.val();
+        wordListEl.innerHTML = "";
+        for (const key in players) {
+          const name = players[key];
+          if (name === currentName) continue; // ไม่แสดงคำของตัวเอง
+          const word = words?.[key] || "(ยังไม่แจก)";
+          const li = document.createElement("li");
+          li.textContent = `${name} = ${word}`;
+          wordListEl.appendChild(li);
+        }
+      });
+    });
+
+    function startGame() {
+      set(ref(db, `rooms/${roomCode}/status`), "started");
+      window.location.href = "timeout.html";
+    }
+  </script>
+</body>
+</html>

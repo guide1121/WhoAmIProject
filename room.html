@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who am I - ห้องรอ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h2>🧩 ห้อง #<span id="room-code">----</span></h2>
+    <p>รอเพื่อนเข้าร่วม...</p>
+
+    <ul id="player-list">
+      <!-- รายชื่อผู้เล่นจะแสดงที่นี่ -->
+    </ul>
+
+    <div id="start-area" style="display:none;">
+      <button onclick="goToCategory()">🎯 เลือกหมวดคำ</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAc5HEG0fi54dSNOp3mpCnvG5cFQ0TyDCc",
+        authDomain: "whoami-91c56.firebaseapp.com",
+        databaseURL: "https://whoami-91c56-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "whoami-91c56",
+        storageBucket: "whoami-91c56.firebasestorage.app",
+        messagingSenderId: "415219915433",
+        appId: "1:415219915433:web:9d7f4328d898a9bcb967b8",
+        measurementId: "G-R5B47J3D19"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const roomCode = localStorage.getItem("roomCode");
+    const isHost = localStorage.getItem("isHost") === 'true';
+
+    document.getElementById("room-code").innerText = roomCode;
+
+    // เพิ่มชื่อผู้เล่นใหม่เข้า Firebase
+    const name = prompt("ใส่ชื่อของคุณ:");
+    const playerRef = push(ref(db, `rooms/${roomCode}/players`));
+    set(playerRef, name);
+
+    // อัปเดตรายชื่อผู้เล่น
+    const listEl = document.getElementById("player-list");
+    onValue(ref(db, `rooms/${roomCode}/players`), snapshot => {
+      listEl.innerHTML = "";
+      const data = snapshot.val();
+      if (data) {
+        Object.values(data).forEach(player => {
+          const li = document.createElement("li");
+          li.textContent = player;
+          listEl.appendChild(li);
+        });
+      }
+      if (isHost) {
+        document.getElementById("start-area").style.display = "block";
+      }
+    });
+
+    function goToCategory() {
+      window.location.href = "category.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หมดเวลา</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { text-align: center; padding: 50px; font-size: 2rem; }
+    #timer { font-size: 4rem; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>⏳ เวลาที่เหลือ</h1>
+  <div id="timer">60</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAc5HEG0fi54dSNOp3mpCnvG5cFQ0TyDCc",
+        authDomain: "whoami-91c56.firebaseapp.com",
+        databaseURL: "https://whoami-91c56-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "whoami-91c56",
+        storageBucket: "whoami-91c56.firebasestorage.app",
+        messagingSenderId: "415219915433",
+        appId: "1:415219915433:web:9d7f4328d898a9bcb967b8",
+        measurementId: "G-R5B47J3D19"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const roomCode = localStorage.getItem("roomCode");
+    const isHost = localStorage.getItem("isHost") === 'true';
+    const timerEl = document.getElementById("timer");
+
+    if (isHost) {
+      const startTime = Date.now();
+      set(ref(db, `rooms/${roomCode}/startTime`), startTime);
+    }
+
+    const startRef = ref(db, `rooms/${roomCode}/startTime`);
+    onValue(startRef, snapshot => {
+      const startTime = snapshot.val();
+      if (!startTime) return;
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = 60 - Math.floor((now - startTime) / 1000);
+        if (remaining <= 0) {
+          clearInterval(interval);
+          timerEl.textContent = "⏰ หมดเวลา!";
+        } else {
+          timerEl.textContent = remaining;
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

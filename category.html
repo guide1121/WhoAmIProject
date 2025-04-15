@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เลือกหมวดหมู่คำ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h2>🎯 เลือกหมวดหมู่คำ</h2>
+    <div id="categories">
+      <button onclick="selectCategory('การ์ตูน')">📺 การ์ตูน</button>
+      <button onclick="selectCategory('ดารา')">🎬 ดารา</button>
+      <button onclick="selectCategory('ประเทศ')">🌍 ประเทศ</button>
+      <button onclick="selectCategory('สัตว์')">🦁 สัตว์</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAc5HEG0fi54dSNOp3mpCnvG5cFQ0TyDCc",
+        authDomain: "whoami-91c56.firebaseapp.com",
+        databaseURL: "https://whoami-91c56-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "whoami-91c56",
+        storageBucket: "whoami-91c56.firebasestorage.app",
+        messagingSenderId: "415219915433",
+        appId: "1:415219915433:web:9d7f4328d898a9bcb967b8",
+        measurementId: "G-R5B47J3D19"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const roomCode = localStorage.getItem("roomCode");
+
+    function selectCategory(category) {
+      const words = {
+        "การ์ตูน": ["โดราเอมอน", "ซินเดอเรลล่า", "สพันจ์บ็อบ"],
+        "ดารา": ["ใหม่ ดาวิกา", "เวียร์ ศุกลวัฒน์", "ญาญ่า"],
+        "ประเทศ": ["ญี่ปุ่น", "ฝรั่งเศส", "อียิปต์"],
+        "สัตว์": ["สิงโต", "ช้าง", "แพนด้า"]
+      };
+
+      // สุ่มคำให้ผู้เล่นแต่ละคน ยกเว้นตัวเอง
+      get(ref(db, `rooms/${roomCode}/players`)).then(snapshot => {
+        const data = snapshot.val();
+        const playerKeys = Object.keys(data);
+        const randomWords = shuffle(words[category]);
+
+        playerKeys.forEach((key, index) => {
+          const word = randomWords[index % randomWords.length];
+          set(ref(db, `rooms/${roomCode}/words/${key}`), word);
+        });
+
+        // บันทึกหมวดที่เลือกด้วย
+        set(ref(db, `rooms/${roomCode}/category`), category);
+
+        window.location.href = "word.html";
+      });
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+  </script>
+</body>
+</html>
