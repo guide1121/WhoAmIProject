@@ -3,26 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Who am I - ห้องรอ</title>
+  <title>ดูคำบนหัวเพื่อน</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    #timer {
+      font-size: 2rem;
+      margin-top: 1rem;
+      color: #4e4e91;
+    }
+  </style>
 </head>
 <body>
   <main>
-    <h2>🧩 ห้อง #<span id="room-code">----</span></h2>
-    <p>รอเพื่อนเข้าร่วม...</p>
-
-    <ul id="player-list">
-      <!-- รายชื่อผู้เล่นจะแสดงที่นี่ -->
+    <h2>🙈 คำบนหัวเพื่อน</h2>
+    <ul id="word-list">
+      <!-- แสดงชื่อ + คำของแต่ละคน -->
     </ul>
-
-    <div id="start-area" style="display:none;">
-      <button onclick="goToCategory()">🎯 เลือกหมวดคำ</button>
-    </div>
+    <h3>⏳ เหลือเวลา: <span id="timer">--</span> วินาที</h3>
   </main>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAc5HEG0fi54dSNOp3mpCnvG5cFQ0TyDCc",
@@ -34,54 +36,58 @@
         appId: "1:415219915433:web:9d7f4328d898a9bcb967b8",
         measurementId: "G-R5B47J3D19"
     };
-    window.goToCategory = function () {
-     window.location.href = "category.html";
-    }
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
     const roomCode = localStorage.getItem("roomCode");
     const isHost = localStorage.getItem("isHost") === 'true';
+    const currentName = prompt("เพื่อความชัวร์ ใส่ชื่อคุณอีกครั้ง");
 
-    document.getElementById("room-code").innerText = roomCode;
+    const playerListRef = ref(db, `rooms/${roomCode}/players`);
+    const wordListRef = ref(db, `rooms/${roomCode}/words`);
+    const wordListEl = document.getElementById("word-list");
 
-    // เพิ่มชื่อผู้เล่นใหม่เข้า Firebase
-    const name = prompt("ใส่ชื่อของคุณ:");
-    const playerRef = push(ref(db, `rooms/${roomCode}/players`));
-    set(playerRef, name);
-
-    // อัปเดตรายชื่อผู้เล่น
-    const listEl = document.getElementById("player-list");
-    onValue(ref(db, `rooms/${roomCode}/players`), snapshot => {
-      listEl.innerHTML = "";
-      const data = snapshot.val();
-      if (data) {
-        Object.values(data).forEach(player => {
+    onValue(playerListRef, snapshot => {
+      const players = snapshot.val();
+      onValue(wordListRef, wordSnap => {
+        const words = wordSnap.val();
+        wordListEl.innerHTML = "";
+        for (const key in players) {
+          const name = players[key];
+          if (name === currentName) continue; // ไม่แสดงคำของตัวเอง
+          const word = words?.[key] || "(ยังไม่แจก)";
           const li = document.createElement("li");
-          li.textContent = player;
-          listEl.appendChild(li);
-        });
-      }
-      if (isHost) {
-        document.getElementById("start-area").style.display = "block";
-      }
+          li.textContent = `${name} = ${word}`;
+          wordListEl.appendChild(li);
+        }
+      });
     });
 
-     // ✅ [เพิ่ม] ฟังสถานะเกม ถ้าเริ่มแล้วให้ redirect ไป word.html
-     const gameStatusRef = ref(db, `rooms/${roomCode}/status`);
-    onValue(gameStatusRef, (snapshot) => {
-      if (snapshot.val() === "started") {
-        window.location.href = "word.html";
-      }
-    });
+    // ✅ เพิ่มระบบจับเวลาในหน้า word
+    const startRef = ref(db, `rooms/${roomCode}/startTime`);
+    const timerEl = document.getElementById("timer");
 
-    // ✅ [เพิ่ม] ให้ goToCategory เป็น global สำหรับ host
-    window.goToCategory = function () {
-      window.location.href = "category.html";
+    if (isHost) {
+      const startTime = Date.now();
+      set(startRef, startTime);
     }
 
+    onValue(startRef, snapshot => {
+      const startTime = snapshot.val();
+      if (!startTime) return;
 
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = 60 - Math.floor((now - startTime) / 1000);
+        if (remaining <= 0) {
+          clearInterval(interval);
+          timerEl.textContent = "⏰ หมดเวลา!";
+        } else {
+          timerEl.textContent = remaining;
+        }
+      }, 1000);
+    });
   </script>
 </body>
 </html>
