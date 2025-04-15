@@ -34,9 +34,10 @@
         appId: "1:415219915433:web:9d7f4328d898a9bcb967b8",
         measurementId: "G-R5B47J3D19"
     };
-    function goToCategory() {
-      window.location.href = "category.html";
+    window.goToCategory = function () {
+     window.location.href = "category.html";
     }
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
